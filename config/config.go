@@ -2,14 +2,25 @@ package config
 
 type CONFIG struct {
 	ServeConfig
+	MysqlConfig
 }
 
-var Configs CONFIG
+var Configs *CONFIG
 
 func init() {
-	Configs = CONFIG{
+	Configs = &CONFIG{
 		ServeConfig{
 			Port: ":8088",
 		},
+		MysqlConfig{
+			"root",
+			"CSY19961222",
+			"101.34.66.232:3306",
+			"blog1222",
+		},
 	}
+}
+
+func (c *CONFIG) GetDNS() string {
+	return c.Name + ":" + c.Password + "@tcp(" + c.Ip + ")/" + c.Dbname
 }
