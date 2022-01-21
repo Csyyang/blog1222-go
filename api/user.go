@@ -2,7 +2,6 @@ package api
 
 import (
 	"blog1222-go/email"
-	"blog1222-go/jwt"
 	"blog1222-go/mysql"
 	"fmt"
 	"reflect"
@@ -152,12 +151,12 @@ func Register(c *gin.Context) {
 * 重置密码
 **/
 
-// 发送邮件
+// 邮箱验证
 type emial struct {
 	Email string `json:"email"`
 }
 
-func SendEmail(c *gin.Context) {
+func CheckEmail(c *gin.Context) {
 	var eml emial
 
 	if err := c.ShouldBindJSON(&eml); err != nil {
@@ -166,13 +165,15 @@ func SendEmail(c *gin.Context) {
 		return
 	}
 
+	fmt.Println(eml.Email)
+
 	db := mysql.Db
 	var user struct {
-		Acc string `json:"account"` // 账号
+		Acc string `json:"account" db:"account"` // 账号
 	}
 
 	// 查询账号
-	err := db.Get(&user, "SELECT account FROM users WHERE email = ?", eml)
+	err := db.Get(&user, "SELECT account FROM users WHERE email = ?", eml.Email)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
 			c.JSON(200, gin.H{
@@ -187,29 +188,65 @@ func SendEmail(c *gin.Context) {
 	}
 
 	// 生成jwt
-	ccc, err := jwt.NewJwt().GenerateToken(user.Acc)
-	if err != nil {
-		fmt.Println(err.Error())
-		c.JSON(500, err.Error())
-		return
-	}
-	// 发送邮件
-	errs := email.SendGoMail([]string{eml.Email}, "重置邮件", "点击重置密码，重置后密码为111111：http://yangyangcsy.cn/reset?token="+ccc)
-	if errs != nil {
-		fmt.Println(err.Error())
-	}
+	// ccc, err := jwt.NewJwt().GenerateToken(user.Acc)
+	// if err != nil {
+	// 	fmt.Println(err.Error())
+	// 	c.JSON(500, err.Error())
+	// 	return
+	// }
+
+	session := sessions.Default(c)
+	session.Set("account", user.Acc)
+	session.Set("email", eml.Email)
+	session.Save()
+
+	// // 发送邮件
+	// errs := email.SendGoMail([]string{eml.Email}, "重置邮件", "点击重置密码，重置后密码为111111：http://yangyangcsy.cn/reset?token=")
+	// if errs != nil {
+	// 	fmt.Println(err.Error())
+	// }
 
 	c.JSON(200, gin.H{
 		"code":    "00",
-		"message": "重置邮件发送成功,请到邮箱查看",
+		"message": "邮箱正确",
 	})
+}
+
+/*
+* 发送邮件
+**/
+func Reset(c *gin.Context) {
+	session := sessions.Default(c)
+
+	eml := session.Get("email")
+	// 发送邮件
+	errs := email.SendGoMail([]string{eml.(string)}, "重置邮件", "点击重置密码，重置后密码为111111：http://yangyangcsy.cn/reset?token=")
+	if errs != nil {
+		fmt.Println(errs.Error())
+	}
 }
 
 /*
 * 重置密码
 **/
-func Reset(c *gin.Context) {
+func ResetPassword(c *gin.Context) {
+	session := sessions.Default(c)
+	account := session.Get("account")
 
+	db := mysql.Db
+	sqlStr := "update user set password= ? where account = ？"
+
+	_, err := db.Exec(sqlStr, "111111", account)
+	if err != nil {
+		fmt.Println(err.Error())
+		c.JSON(500, "bad")
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"code":    "00",
+		"message": "密码重置成功",
+	})
 }
 
 func Test(c *gin.Context) {

@@ -34,6 +34,7 @@ func (r *Router) Init() {
 		{
 			user.POST("/login", api.Login)
 			user.POST("/register", api.Register)
+			user.POST("/checkEmail", api.CheckEmail)
 		}
 	}
 
@@ -45,6 +46,7 @@ func (r *Router) Init() {
 
 		user := priviteRouter.Group("user")
 		user.POST("/logOut", api.LogOut)
+		user.POST("/reset", api.Reset)
 
 	}
 
