@@ -8,6 +8,9 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"blog1222-go/middleware"
+
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 )
 
 type Router struct {
@@ -16,6 +19,10 @@ type Router struct {
 
 func (r *Router) Init() {
 	router := gin.Default()
+
+	// session中间件
+	store := cookie.NewStore([]byte("secret"))
+	router.Use(sessions.Sessions("mysession", store))
 
 	publicRouter := router.Group("")
 	{
@@ -31,9 +38,14 @@ func (r *Router) Init() {
 	}
 
 	priviteRouter := router.Group("")
-	priviteRouter.Use(middleware.JwtVer())
+	// 添加session验证
+	priviteRouter.Use(middleware.SessVer())
 	{
-		priviteRouter.GET("/test")
+		priviteRouter.POST("/test", api.Test)
+
+		user := priviteRouter.Group("user")
+		user.POST("/logOut", api.LogOut)
+
 	}
 
 	router.Run(r.port)
