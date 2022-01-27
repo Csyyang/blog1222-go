@@ -3,6 +3,7 @@ package api
 import (
 	"blog1222-go/email"
 	"blog1222-go/mysql"
+	"blog1222-go/response"
 	"fmt"
 	"reflect"
 
@@ -23,7 +24,8 @@ func Login(c *gin.Context) {
 
 	var userG user
 	if err := c.ShouldBindJSON(&userG); err != nil {
-		c.JSON(500, err)
+		response.BadRes(c, err.Error())
+		// c.JSON(500, err)
 		return
 	}
 
@@ -39,7 +41,8 @@ func Login(c *gin.Context) {
 	if err != nil {
 
 		if err.Error() == "sql: no rows in result set" {
-			c.JSON(200, gin.H{"message": "账号或密码错误"})
+			// c.JSON(200, gin.H{"message": "账号或密码错误"})
+			response.BadRes(c, "账号或密码错误")
 			return
 		}
 
@@ -216,14 +219,20 @@ func CheckEmail(c *gin.Context) {
 * 发送邮件
 **/
 func Reset(c *gin.Context) {
+	cookie, _ := c.Cookie("mysession")
 	session := sessions.Default(c)
 
 	eml := session.Get("email")
 	// 发送邮件
-	errs := email.SendGoMail([]string{eml.(string)}, "重置邮件", "点击重置密码，重置后密码为111111：http://yangyangcsy.cn/reset?token=")
+	errs := email.SendGoMail([]string{eml.(string)}, "重置邮件", "点击重置密码，重置后密码为111111：http://yangyangcsy.cn/#/reset?token="+cookie)
 	if errs != nil {
 		fmt.Println(errs.Error())
 	}
+
+	c.JSON(200, gin.H{
+		"code":    "00",
+		"message": "邮件发送成功",
+	})
 }
 
 /*
@@ -234,22 +243,83 @@ func ResetPassword(c *gin.Context) {
 	account := session.Get("account")
 
 	db := mysql.Db
-	sqlStr := "update user set password= ? where account = ？"
+	sqlStr := "update users set password= ? where account = ?"
 
 	_, err := db.Exec(sqlStr, "111111", account)
 	if err != nil {
-		fmt.Println(err.Error())
-		c.JSON(500, "bad")
+		response.BadRes(c, err.Error())
 		return
 	}
 
-	c.JSON(200, gin.H{
-		"code":    "00",
-		"message": "密码重置成功",
-	})
+	// c.JSON(200, gin.H{
+	// 	"code":    "00",
+	// 	"message": "密码重置成功",
+	// })
+	response.SuccessRes(c, "密码重置成功")
 }
 
 func Test(c *gin.Context) {
 
 	c.JSON(200, "ok的")
+}
+
+/*
+* 更换密码
+**/
+type users struct {
+	Acc      string `json:"account"`
+	Pass     string `json:"password"`
+	NewPass  string `json:"newpassword"`
+	NewPass2 string `json:"newpassword2"`
+}
+
+type dbPass struct {
+	Pass string `db:"password"`
+}
+
+func ChangPassword(c *gin.Context) {
+	// session := sessions.Default(c)
+	// account := session.Get("account")
+
+	var usermessage users
+	if err := c.ShouldBindJSON(&usermessage); err != nil {
+		response.BadRes(c, err.Error())
+	}
+
+	fmt.Println(usermessage)
+
+	db := mysql.Db
+	sqlPas := "SELECT password FROM users WHERE account = ?"
+
+	var dbPassworld dbPass
+
+	err := db.Get(&dbPassworld, sqlPas, usermessage.Acc)
+	if err != nil {
+		response.BadRes(c, err.Error())
+		return
+	}
+
+	if dbPassworld.Pass != usermessage.Pass {
+		response.BadRes(c, "密码错误")
+		return
+	}
+
+	if usermessage.NewPass != usermessage.NewPass2 {
+		response.BadRes(c, "两次输入密码不一致")
+		return
+	}
+
+	sqlStr := "update users set password= ? where account = ?"
+
+	_, err2 := db.Exec(sqlStr, usermessage.NewPass, usermessage.Acc)
+	if err2 != nil {
+		response.BadRes(c, err2.Error())
+		return
+	}
+
+	session := sessions.Default(c)
+	session.Clear()
+	session.Save()
+
+	response.SuccessRes(c, "修改密码成功")
 }

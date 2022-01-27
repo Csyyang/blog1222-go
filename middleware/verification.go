@@ -3,6 +3,8 @@ package middleware
 import (
 	"blog1222-go/jwt"
 	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -45,7 +47,10 @@ func SessVer() gin.HandlerFunc {
 		session := sessions.Default(c)
 		fmt.Println(session.Get("account"))
 		if session.Get("account") == nil {
-			c.JSON(302, "http://localhost:3000/#/login")
+			c.JSON(302, gin.H{
+				"code": "03",
+				"url":  "/?date=" + strconv.FormatInt(time.Now().Unix(), 10) + "#/login",
+			})
 			c.Abort()
 			return
 		}

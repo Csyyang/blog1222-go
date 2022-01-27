@@ -11,6 +11,7 @@ func init() {
 	Configs = &CONFIG{
 		ServeConfig{
 			Port: ":8088",
+			Ip:   "http://localhost:8088",
 		},
 		MysqlConfig{
 			"root",
@@ -22,5 +23,5 @@ func init() {
 }
 
 func (c *CONFIG) GetDNS() string {
-	return c.Name + ":" + c.Password + "@tcp(" + c.Ip + ")/" + c.Dbname
+	return c.Name + ":" + c.Password + "@tcp(" + c.MysqlConfig.Ip + ")/" + c.Dbname
 }

@@ -2,6 +2,7 @@ package router
 
 import (
 	"blog1222-go/config"
+	"net/http"
 
 	"blog1222-go/api"
 
@@ -19,10 +20,10 @@ type Router struct {
 
 func (r *Router) Init() {
 	router := gin.Default()
-
+	router.StaticFS("/images", http.Dir("./images"))
 	// session中间件
 	store := cookie.NewStore([]byte("secret"))
-	router.Use(sessions.Sessions("mysession", store))
+	router.Use(sessions.Sessions("mysession", store)) // 设置cookie名称
 
 	publicRouter := router.Group("")
 	{
@@ -34,8 +35,8 @@ func (r *Router) Init() {
 		{
 			user.POST("/login", api.Login)
 			user.POST("/register", api.Register)
-			user.POST("/checkEmail", api.CheckEmail)
 		}
+
 	}
 
 	priviteRouter := router.Group("")
@@ -45,9 +46,18 @@ func (r *Router) Init() {
 		priviteRouter.POST("/test", api.Test)
 
 		user := priviteRouter.Group("user")
-		user.POST("/logOut", api.LogOut)
-		user.POST("/reset", api.Reset)
+		{
+			user.POST("/logOut", api.LogOut)
+			user.POST("/reset", api.Reset)
+			user.POST("/checkEmail", api.CheckEmail)
+			user.POST("/ResetPassword", api.ResetPassword)
+			user.POST("/ChangPassword", api.ChangPassword)
+		}
 
+		uploade := priviteRouter.Group("upload")
+		{
+			uploade.POST("/uploadImage", api.Uploadfile_image)
+		}
 	}
 
 	router.Run(r.port)
