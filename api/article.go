@@ -14,10 +14,11 @@ import (
  *  新增文章
  */
 type articleT struct {
-	Aticle_title    string `json:'title'`
-	Article_context string `json:context`
-	Article_type    string `json:lable`
-	Article_image   string `json:image`
+	Aticle_title    string `json:"title"`
+	Article_context string `json:"context"`
+	Article_type    string `json:"lable"`
+	Article_image   string `json:"image"`
+	Article_brief   string `json:"brief"`
 }
 
 func NewArticle(c *gin.Context) {
@@ -44,8 +45,8 @@ func NewArticle(c *gin.Context) {
 
 	// 存入数据库
 	db := mysql.Db
-	sqlstr := "insert into article (article_title,article_create_date,article_modify_date,article_context,account,article_type,article_topping,article_image) values (?,?,?,?,?,?,?,?)"
-	_, err := db.Exec(sqlstr, article.Aticle_title, str, str, article.Article_context, account, article.Article_type, '0', article.Article_image)
+	sqlstr := "insert into article (article_title,article_create_date,article_modify_date,article_context,account,article_type,article_image,article_brief) values (?,?,?,?,?,?,?,?)"
+	_, err := db.Exec(sqlstr, article.Aticle_title, str, str, article.Article_context, account, article.Article_type, article.Article_image, article.Article_brief)
 	if err != nil {
 		fmt.Println(err.Error())
 		c.JSON(500, "bad")
@@ -56,3 +57,28 @@ func NewArticle(c *gin.Context) {
 }
 
 func FixArticle(c *gin.Context) {}
+
+func GetArticle(c *gin.Context) {
+	db := mysql.Db
+	var article []struct {
+		Title       string `db:"article_title" json:"title"`
+		Create_date string `db:"article_create_date" json:"create_date"`
+		Brief       string `db:"article_brief" json:"brief"`
+		View        string `db:"article_view" json:"view"`
+		Likes       string `db:"article_likes" json:"likes"`
+		Comment     string `db:"article_comment" json:"comment"`
+		Image       string `db:"article_image" json:"image"`
+	}
+
+	sqlStr := "SELECT article_title,article_create_date,article_brief,article_view,article_likes,article_comment,article_image FROM article"
+	err := db.Select(&article, sqlStr)
+	if err != nil {
+		response.BadRes(c, err.Error())
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"code": "00",
+		"data": article,
+	})
+}
