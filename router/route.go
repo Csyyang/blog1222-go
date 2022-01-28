@@ -39,12 +39,13 @@ func (r *Router) Init() {
 
 	}
 
+	// session
 	priviteRouter := router.Group("")
-	// 添加session验证
 	priviteRouter.Use(middleware.SessVer())
 	{
 		priviteRouter.POST("/test", api.Test)
 
+		// 账号操作
 		user := priviteRouter.Group("user")
 		{
 			user.POST("/logOut", api.LogOut)
@@ -54,9 +55,17 @@ func (r *Router) Init() {
 			user.POST("/ChangPassword", api.ChangPassword)
 		}
 
+		// 文件上传
 		uploade := priviteRouter.Group("upload")
 		{
 			uploade.POST("/uploadImage", api.Uploadfile_image)
+		}
+
+		// 文章
+		article := priviteRouter.Group("article")
+		{
+			article.POST("/addArticle", api.NewArticle)
+			article.POST("/getArticle", api.GetArticle)
 		}
 	}
 
