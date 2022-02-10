@@ -1,9 +1,8 @@
-package api
+package uploads
 
 import (
-	"net/http"
-
 	"blog1222-go/config"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )

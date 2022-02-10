@@ -1,10 +1,11 @@
 package router
 
 import (
+	"blog1222-go/api/articles"
+	"blog1222-go/api/uploads"
+	"blog1222-go/api/users"
 	"blog1222-go/config"
 	"net/http"
-
-	"blog1222-go/api"
 
 	"github.com/gin-gonic/gin"
 
@@ -33,13 +34,13 @@ func (r *Router) Init() {
 
 		user := publicRouter.Group("user")
 		{
-			user.POST("/login", api.Login)
-			user.POST("/register", api.Register)
+			user.POST("/login", users.Login)
+			user.POST("/register", users.Register)
 		}
 
 		articlePlu := router.Group("article")
 		{
-			articlePlu.POST("getArticle", api.GetArticle)
+			articlePlu.POST("getArticle", articles.GetArticle)
 		}
 	}
 
@@ -47,28 +48,28 @@ func (r *Router) Init() {
 	priviteRouter := router.Group("")
 	priviteRouter.Use(middleware.SessVer())
 	{
-		priviteRouter.POST("/test", api.Test)
+		// priviteRouter.POST("/test", api.Test)
 
 		// 账号操作
 		user := priviteRouter.Group("user")
 		{
-			user.POST("/logOut", api.LogOut)
-			user.POST("/reset", api.Reset)
-			user.POST("/checkEmail", api.CheckEmail)
-			user.POST("/ResetPassword", api.ResetPassword)
-			user.POST("/ChangPassword", api.ChangPassword)
+			user.POST("/logOut", users.LogOut)
+			user.POST("/reset", users.Reset)
+			user.POST("/checkEmail", users.CheckEmail)
+			user.POST("/ResetPassword", users.ResetPassword)
+			user.POST("/ChangPassword", users.ChangPassword)
 		}
 
 		// 文件上传
 		uploade := priviteRouter.Group("upload")
 		{
-			uploade.POST("/uploadImage", api.Uploadfile_image)
+			uploade.POST("/uploadImage", uploads.Uploadfile_image)
 		}
 
 		// 文章
 		article := priviteRouter.Group("article")
 		{
-			article.POST("/addArticle", api.NewArticle)
+			article.POST("/addArticle", articles.NewArticle)
 		}
 	}
 
