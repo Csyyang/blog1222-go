@@ -70,6 +70,7 @@ func (r *Router) Init() {
 		article := priviteRouter.Group("article")
 		{
 			article.POST("/addArticle", articles.NewArticle)
+			article.POST("/like", articles.Links)
 		}
 	}
 
