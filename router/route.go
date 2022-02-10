@@ -37,6 +37,10 @@ func (r *Router) Init() {
 			user.POST("/register", api.Register)
 		}
 
+		articlePlu := router.Group("article")
+		{
+			articlePlu.POST("getArticle", api.GetArticle)
+		}
 	}
 
 	// session
@@ -65,7 +69,6 @@ func (r *Router) Init() {
 		article := priviteRouter.Group("article")
 		{
 			article.POST("/addArticle", api.NewArticle)
-			article.POST("/getArticle", api.GetArticle)
 		}
 	}
 
