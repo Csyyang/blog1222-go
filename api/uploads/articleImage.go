@@ -17,7 +17,7 @@ func Uploadfile_image(c *gin.Context) {
 		return
 	}
 	//将文件保存至本项目根目录中
-	c.SaveUploadedFile(f, "./images/"+f.Filename)
+	c.SaveUploadedFile(f, "./html/images/"+f.Filename)
 	//保存成功返回正确的Json数据
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "00",

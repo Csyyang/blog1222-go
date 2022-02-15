@@ -20,3 +20,10 @@ func SuccessRes(c *gin.Context, data interface{}) {
 		"message": data,
 	})
 }
+
+func SuccessData(c *gin.Context, data interface{}) {
+	c.JSON(200, map[string]interface{}{
+		"code": "00",
+		"data": data,
+	})
+}

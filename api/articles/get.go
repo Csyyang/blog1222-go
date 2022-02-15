@@ -22,6 +22,7 @@ type articleType struct {
 	Image       string `db:"article_image" json:"image"`
 	Id          string `db:"article_id" json:"id"`
 	Context     string `db:"article_context" json:"context"`
+	Account     string `db:"account" json:"account"`
 }
 
 func GetArticle(c *gin.Context) {
@@ -63,7 +64,7 @@ func GetArticle(c *gin.Context) {
 	// 返回所有文章
 	var articles []articleType
 
-	sqlStr := "SELECT article_title,article_create_date,article_brief,article_view,article_likes,article_comment,article_image, article_id FROM article"
+	sqlStr := "SELECT article_title,article_create_date,article_brief,article_view,article_likes,article_comment,article_image, article_id, account FROM article"
 	err := db.Select(&articles, sqlStr)
 	if err != nil {
 		response.BadRes(c, err.Error())

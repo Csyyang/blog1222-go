@@ -11,7 +11,8 @@ func init() {
 	Configs = &CONFIG{
 		ServeConfig{
 			Port: ":8088",
-			Ip:   "http://localhost:8088",
+			// Ip:   "http://localhost:8088",
+			Ip: "http://yangyangcsy.cn",
 		},
 		MysqlConfig{
 			"root",

@@ -2,6 +2,7 @@ package router
 
 import (
 	"blog1222-go/api/articles"
+	"blog1222-go/api/comment"
 	"blog1222-go/api/uploads"
 	"blog1222-go/api/users"
 	"blog1222-go/config"
@@ -36,11 +37,18 @@ func (r *Router) Init() {
 		{
 			user.POST("/login", users.Login)
 			user.POST("/register", users.Register)
+			user.GET("getUserImg", users.GetUserImg)
 		}
 
 		articlePlu := router.Group("article")
 		{
 			articlePlu.POST("getArticle", articles.GetArticle)
+		}
+
+		commentPlu := router.Group("comment")
+		{
+			commentPlu.POST("getComment", comment.GetComment)
+			commentPlu.POST("setComment", comment.SetComment)
 		}
 	}
 
